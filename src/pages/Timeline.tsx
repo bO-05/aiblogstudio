@@ -82,11 +82,6 @@ export default function Timeline() {
   };
 
   const handleGenerateAudio = async (post: BlogPost) => {
-    if (!post.storyblokId) {
-      toast.error('Post must be published before generating audio');
-      return;
-    }
-
     // Update audio status to generating
     const updatedPost = { ...post, audioStatus: 'generating' as const };
     storage.updatePost(post.id, updatedPost);
@@ -95,6 +90,9 @@ export default function Timeline() {
     toast.info('Generating audio... This may take a few minutes.');
 
     try {
+      // Prepare text content for TTS
+      const textContent = `${post.title}. ${post.excerpt}. ${post.content}`;
+      
       // Call the Netlify function
       const response = await fetch('/.netlify/functions/text-to-speech', {
         method: 'POST',
@@ -102,24 +100,25 @@ export default function Timeline() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          space_id: parseInt(import.meta.env.VITE_STORYBLOK_SPACE_ID),
-          story_id: parseInt(post.storyblokId)
+          text: textContent
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate audio');
+        const errorText = await response.text();
+        console.error('Response error:', errorText);
+        throw new Error(`Failed to generate audio: ${response.status}`);
       }
 
       const result = await response.json();
       console.log('Audio generation result:', result);
 
-      // Update post status to ready
+      // For now, just mark as ready since we're not integrating with Storyblok in this fix
       const finalPost = { ...post, audioStatus: 'ready' as const };
       storage.updatePost(post.id, finalPost);
       setPosts(prev => prev.map(p => p.id === post.id ? finalPost : p));
       
-      toast.success('Audio generated successfully! It will appear on the blog post.');
+      toast.success('Audio generated successfully!');
     } catch (error) {
       console.error('Audio generation error:', error);
       
@@ -249,6 +248,11 @@ export default function Timeline() {
                     <p className="text-gray-600">Multi-modal content live</p>
                   </div>
                 </div>
+              </div>
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <strong>Development Note:</strong> To test audio generation locally, run <code className="bg-yellow-100 px-1 rounded">netlify dev</code> instead of <code className="bg-yellow-100 px-1 rounded">npm run dev</code> to enable Netlify functions.
+                </p>
               </div>
             </div>
           </div>
