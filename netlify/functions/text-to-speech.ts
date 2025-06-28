@@ -44,27 +44,56 @@ const prepareTextForTTS = (content: string): string => {
   return cleanText;
 };
 
+const getStoryUrl = async (spaceId: number, storyId: number): Promise<string> => {
+  try {
+    const res = await storyblok.get(`/spaces/${spaceId}/stories/${storyId}`);
+    return res.data.story.full_slug;
+  } catch (err) {
+    console.log('Error getting story URL:', err);
+    return '';
+  }
+};
+
 const getStoryContent = async (spaceId: number, storyId: number): Promise<string> => {
   try {
     console.log('📖 Fetching story content for audio generation...');
     
-    // Get story from Storyblok
-    const response = await storyblok.get(`/spaces/${spaceId}/stories/${storyId}`);
-    const story = response.data.story;
-    
-    if (!story.content) {
-      throw new Error('Story content not found');
+    const domain = process.env.PRODUCTION_DOMAIN;
+    if (!domain) {
+      throw new Error('PRODUCTION_DOMAIN environment variable is required');
     }
 
-    // Extract title and content
-    const title = story.content.title || story.name || 'Article';
-    const content = story.content.content || '';
-    const excerpt = story.content.excerpt || '';
+    const url = await getStoryUrl(spaceId, storyId);
+    const urlToCrawl = `${domain}/${url}?ts=${Date.now()}`;
     
-    // Combine for TTS with natural pauses
-    const fullText = `Article title: ${title}. <break time="1.0s" /> ${excerpt ? `${excerpt}. <break time="1.0s" />` : ''} Article content: ${content}`;
+    console.log('🔍 Crawling URL:', urlToCrawl);
     
-    console.log('✅ Story content extracted successfully');
+    const res = await fetch(urlToCrawl);
+    const urlText = await res.text();
+    const cheerioDocument = cheerio.load(urlText);
+    
+    // Extract title and content using selectors
+    const titleSelector = 'h1';
+    const bodySelector = '[data-blog-content], .prose, article, main';
+    
+    const title = cheerioDocument(titleSelector).first().text().trim();
+    const content = cheerioDocument(bodySelector).first().text().trim();
+    
+    if (!title && !content) {
+      // Fallback: get story directly from Storyblok
+      console.log('⚠️ Could not crawl content, falling back to Storyblok API...');
+      const response = await storyblok.get(`/spaces/${spaceId}/stories/${storyId}`);
+      const story = response.data.story;
+      
+      const fallbackTitle = story.content.title || story.name || 'Article';
+      const fallbackContent = story.content.content || story.content.excerpt || '';
+      
+      return `Article title: ${fallbackTitle}. <break time="1.0s" /> Article content: ${prepareTextForTTS(fallbackContent)}`;
+    }
+    
+    const fullText = `Article title: ${title}. <break time="1.0s" /> Article content: ${content}`;
+    console.log('✅ Story content extracted successfully, length:', fullText.length);
+    
     return fullText;
   } catch (error) {
     console.error('❌ Error fetching story content:', error);

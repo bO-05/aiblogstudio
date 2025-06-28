@@ -29,7 +29,7 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
           return `<ul class="list-disc list-inside mb-6 space-y-2">${paragraph}</ul>`;
         }
         if (paragraph.trim()) {
-          return `<p class="mb-6 text-gray-700 leading-relaxed">${paragraph}</p>`;
+          return `<div class="mb-6 text-gray-700 leading-relaxed" data-blog-content>${paragraph}</div>`;
         }
         return '';
       })
@@ -41,6 +41,7 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
   return (
     <div 
       className={`prose prose-lg max-w-none ${className}`}
+      data-blog-content
       dangerouslySetInnerHTML={{ __html: renderContent(content) }}
     />
   );
