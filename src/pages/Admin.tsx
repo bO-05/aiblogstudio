@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Wand2, AlertCircle, Clock, Info, Sparkles, Globe, CheckCircle } from 'lucide-react';
+import { Wand2, AlertCircle, Clock, Info, Sparkles, Timeline, CheckCircle } from 'lucide-react';
 import { GenerationRequest, BlogPost } from '../types';
 import { aiService } from '../services/aiService';
-import { storyblokService } from '../services/storyblokService';
 import { storage } from '../utils/storage';
 import { rateLimiter } from '../utils/rateLimiter';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -60,42 +59,16 @@ export default function Admin() {
         theme: formData.theme,
         tone: formData.tone,
         length: formData.length,
-        status: 'generated',
+        status: 'generated', // Keep as local draft
         createdAt: new Date().toISOString()
       };
 
-      // Save to local storage first
+      // Save to local storage only (no auto-publishing)
       storage.addPost(newPost);
+      setGeneratedPost(newPost);
 
-      // Auto-publish to Storyblok immediately
-      try {
-        console.log('🚀 Auto-publishing to Storyblok...');
-        const storyblokId = await storyblokService.publishPost(newPost);
-        
-        if (storyblokId) {
-          const publishedPost = {
-            ...newPost,
-            status: 'published' as const,
-            publishedAt: new Date().toISOString(),
-            storyblokId
-          };
-          
-          // Update local storage with published status
-          storage.updatePost(newPost.id, publishedPost);
-          setGeneratedPost(publishedPost);
-          
-          console.log('✅ Auto-publish successful!');
-          toast.success('Blog post generated and published successfully!');
-        } else {
-          // If publish fails, keep as generated
-          setGeneratedPost(newPost);
-          toast.success('Blog post generated! You can publish it manually from Timeline.');
-        }
-      } catch (publishError) {
-        console.error('Auto-publish failed:', publishError);
-        setGeneratedPost(newPost);
-        toast.success('Blog post generated! You can publish it manually from Timeline.');
-      }
+      console.log('✅ Blog post generated and saved locally');
+      toast.success('Blog post generated successfully! Go to Timeline to publish.');
 
       // Show success modal
       setShowSuccessModal(true);
@@ -148,24 +121,24 @@ export default function Admin() {
           <div className="flex items-start space-x-3">
             <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">🚀 Instant Publishing Workflow</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">📝 Content Creation Workflow</h3>
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <Sparkles className="h-4 w-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">AI Generation</p>
-                    <p className="text-gray-600">Content + Images</p>
+                    <p className="font-medium text-gray-900">1. Generate</p>
+                    <p className="text-gray-600">AI creates local draft</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Globe className="h-4 w-4 text-purple-600" />
+                    <Timeline className="h-4 w-4 text-purple-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Auto-Publish</p>
-                    <p className="text-gray-600">To Storyblok CMS</p>
+                    <p className="font-medium text-gray-900">2. Review</p>
+                    <p className="text-gray-600">Edit in Timeline</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -173,8 +146,8 @@ export default function Admin() {
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">Live Instantly</p>
-                    <p className="text-gray-600">Visible in blog</p>
+                    <p className="font-medium text-gray-900">3. Publish</p>
+                    <p className="text-gray-600">Go live to blog</p>
                   </div>
                 </div>
               </div>
@@ -282,11 +255,11 @@ export default function Admin() {
               className="w-full flex items-center justify-center space-x-2 px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:-translate-y-0.5"
             >
               {loading ? (
-                <LoadingSpinner size="sm" text="Generating and publishing..." />
+                <LoadingSpinner size="sm" text="Generating content..." />
               ) : (
                 <>
                   <Wand2 className="h-5 w-5" />
-                  <span>Generate & Publish Blog Post</span>
+                  <span>Generate Blog Post</span>
                 </>
               )}
             </button>
@@ -298,7 +271,7 @@ export default function Admin() {
               <div className="space-y-1 text-xs text-blue-600">
                 <p>• Creating engaging content with Mistral LLM</p>
                 <p>• Generating atmospheric images with Imagen4 AI</p>
-                <p>• Publishing directly to Storyblok</p>
+                <p>• Saving as local draft for review</p>
                 <p>• Optimizing for SEO and readability</p>
               </div>
             </div>
@@ -317,8 +290,8 @@ export default function Admin() {
             <li>• Be specific with your theme - include key points you want covered</li>
             <li>• Choose the tone that matches your target audience</li>
             <li>• Longer posts provide more detailed coverage of complex topics</li>
-            <li>• Posts are automatically published and immediately visible in the blog</li>
-            <li>• You can edit and regenerate content after creation in Timeline</li>
+            <li>• Generated posts are saved as drafts - review them in Timeline</li>
+            <li>• You can edit and regenerate content before publishing</li>
           </ul>
         </motion.div>
       </div>

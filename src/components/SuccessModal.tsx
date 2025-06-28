@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Eye, Edit3, ArrowRight, X } from 'lucide-react';
+import { CheckCircle, Timeline, Edit3, ArrowRight, X, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BlogPost } from '../types';
 
@@ -22,7 +22,7 @@ export default function SuccessModal({ post, onClose, isVisible }: SuccessModalP
         className="bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 text-white relative">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 text-white relative">
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-1 text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
@@ -35,8 +35,8 @@ export default function SuccessModal({ post, onClose, isVisible }: SuccessModalP
               <CheckCircle className="h-8 w-8" />
             </div>
             <div>
-              <h2 className="text-xl font-bold">Blog Post Created Successfully!</h2>
-              <p className="text-green-100 text-sm">Your AI-generated content is ready</p>
+              <h2 className="text-xl font-bold">Blog Post Generated!</h2>
+              <p className="text-blue-100 text-sm">Your content is ready for review</p>
             </div>
           </div>
         </div>
@@ -72,12 +72,12 @@ export default function SuccessModal({ post, onClose, isVisible }: SuccessModalP
           </div>
 
           {/* Status */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div className="flex items-center space-x-2">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <Sparkles className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-green-800 font-medium">Published to Storyblok</p>
-                <p className="text-green-700 text-sm">Your post is now live and visible in the blog</p>
+                <p className="text-blue-800 font-medium">Saved as Local Draft</p>
+                <p className="text-blue-700 text-sm">Go to Timeline to review and publish to blog</p>
               </div>
             </div>
           </div>
@@ -89,26 +89,25 @@ export default function SuccessModal({ post, onClose, isVisible }: SuccessModalP
               onClick={onClose}
               className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-300"
             >
-              <Edit3 className="h-5 w-5" />
-              <span>View in Timeline</span>
+              <Timeline className="h-5 w-5" />
+              <span>Review in Timeline</span>
               <ArrowRight className="h-5 w-5" />
             </Link>
             
             <div className="grid grid-cols-2 gap-3">
-              <Link
-                to="/blog"
+              <button
                 onClick={onClose}
                 className="flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
               >
-                <Eye className="h-4 w-4" />
-                <span>View Blog</span>
-              </Link>
+                <Edit3 className="h-4 w-4" />
+                <span>Create Another</span>
+              </button>
               
               <button
                 onClick={onClose}
                 className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
-                Create Another
+                Close
               </button>
             </div>
           </div>

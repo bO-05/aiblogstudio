@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, User, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface BlogLayoutProps {
@@ -57,36 +57,59 @@ export default function BlogLayout({
   }, [image]);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {showBackButton && (
-            <Link
-              to="/blog"
-              className="inline-flex items-center space-x-2 text-purple-100 hover:text-white mb-6 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back to Blog</span>
-            </Link>
-          )}
-          
-          <div className="text-center">
-            <Link to="/" className="inline-block mb-4">
-              <h1 className="text-2xl font-bold">AI Blog Studio</h1>
-            </Link>
-            <nav className="flex justify-center space-x-6 text-sm">
-              <Link to="/" className="hover:text-purple-200 transition-colors">Home</Link>
-              <Link to="/blog" className="hover:text-purple-200 transition-colors">Blog</Link>
-              <Link to="/login" className="hover:text-purple-200 transition-colors">Admin</Link>
-            </nav>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Header - Unified with other pages */}
+      <header className="bg-white/90 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-8">
+              <Link to="/" className="flex items-center space-x-2">
+                <Sparkles className="h-8 w-8 text-purple-600" />
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  AI Blog Studio
+                </span>
+              </Link>
+              
+              <div className="flex space-x-4">
+                <Link
+                  to="/"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                >
+                  <span>Home</span>
+                </Link>
+                
+                <Link
+                  to="/blog"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium bg-purple-100 text-purple-700"
+                >
+                  <span>Blog</span>
+                </Link>
+                
+                <Link
+                  to="/login"
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-purple-600 hover:bg-purple-50 transition-colors"
+                >
+                  <span>Admin</span>
+                </Link>
+              </div>
+            </div>
+            
+            {showBackButton && (
+              <Link
+                to="/blog"
+                className="inline-flex items-center space-x-2 text-purple-600 hover:text-purple-700 font-medium transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Blog</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
       {/* Hero Section for Individual Posts */}
       {title && (
-        <section className="bg-gradient-to-b from-gray-50 to-white py-12">
+        <section className="bg-gradient-to-b from-white/50 to-transparent py-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             {image && (
               <div className="aspect-video bg-gray-200 rounded-xl overflow-hidden mb-8 relative">
@@ -149,11 +172,6 @@ export default function BlogLayout({
                   </div>
                 )}
                 
-                <div className="flex items-center space-x-1">
-                  <User className="h-4 w-4" />
-                  <span>AI Generated</span>
-                </div>
-                
                 {theme && (
                   <div className="flex items-center space-x-1">
                     <Tag className="h-4 w-4" />
@@ -178,12 +196,15 @@ export default function BlogLayout({
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200">
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-600">
-            <p className="mb-2">Powered by AI Blog Studio</p>
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              <p className="font-semibold">Powered by AI Blog Studio</p>
+            </div>
             <p className="text-sm">
-              Content generated with Mistral LLM • Images by FAL AI • Published via Storyblok
+              Content generated with Mistral LLM • Images by Imagen4 AI • Published via Storyblok
             </p>
           </div>
         </div>
