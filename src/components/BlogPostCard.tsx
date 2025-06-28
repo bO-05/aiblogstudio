@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Eye, Edit3, Upload, RefreshCw, Trash2, CheckCircle } from 'lucide-react';
+import { Calendar, Eye, Edit3, Upload, RefreshCw, Trash2, CheckCircle, Volume2, VolumeX } from 'lucide-react';
 import { BlogPost } from '../types';
 import { format } from 'date-fns';
 
@@ -10,9 +10,17 @@ interface BlogPostCardProps {
   onPublish: (post: BlogPost) => void;
   onRegenerate: (post: BlogPost) => void;
   onDelete: (post: BlogPost) => void;
+  onGenerateAudio?: (post: BlogPost) => void;
 }
 
-export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, onDelete }: BlogPostCardProps) {
+export default function BlogPostCard({ 
+  post, 
+  onEdit, 
+  onPublish, 
+  onRegenerate, 
+  onDelete, 
+  onGenerateAudio 
+}: BlogPostCardProps) {
   const statusConfig = {
     generated: {
       color: 'bg-blue-100 text-blue-700',
@@ -27,6 +35,16 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
   };
 
   const config = statusConfig[post.status as keyof typeof statusConfig] || statusConfig.generated;
+
+  const audioStatusConfig = {
+    none: { icon: VolumeX, color: 'text-gray-400', label: 'No audio' },
+    generating: { icon: Volume2, color: 'text-blue-500', label: 'Generating...' },
+    ready: { icon: Volume2, color: 'text-green-500', label: 'Audio ready' },
+    error: { icon: VolumeX, color: 'text-red-500', label: 'Audio error' }
+  };
+
+  const audioStatus = post.audioStatus || 'none';
+  const AudioIcon = audioStatusConfig[audioStatus].icon;
 
   return (
     <motion.div
@@ -56,6 +74,13 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
             <span>{config.label}</span>
           </div>
         </div>
+
+        {/* Audio Status Badge */}
+        <div className="absolute top-3 left-3">
+          <div className={`p-1.5 bg-white/90 backdrop-blur-sm rounded-full ${audioStatusConfig[audioStatus].color}`}>
+            <AudioIcon className="h-3 w-3" />
+          </div>
+        </div>
       </div>
 
       {/* Content */}
@@ -81,6 +106,11 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
         {/* Status Description */}
         <div className="mb-4">
           <p className="text-xs text-gray-500 italic">{config.description}</p>
+          {post.audioStatus && post.audioStatus !== 'none' && (
+            <p className="text-xs text-gray-500 italic mt-1">
+              Audio: {audioStatusConfig[audioStatus].label}
+            </p>
+          )}
         </div>
 
         <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
@@ -105,6 +135,30 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
             >
               <Upload className="h-4 w-4" />
               <span>Publish Live</span>
+            </button>
+          )}
+          
+          {/* Audio Generation Button */}
+          {onGenerateAudio && post.status === 'published' && (
+            <button
+              onClick={() => onGenerateAudio(post)}
+              disabled={post.audioStatus === 'generating'}
+              className={`p-2 rounded-lg transition-colors ${
+                post.audioStatus === 'generating'
+                  ? 'text-blue-500 bg-blue-50 cursor-not-allowed'
+                  : post.audioStatus === 'ready'
+                  ? 'text-green-600 bg-green-50 hover:bg-green-100'
+                  : 'text-purple-600 hover:bg-purple-50'
+              }`}
+              title={
+                post.audioStatus === 'generating' 
+                  ? 'Generating audio...' 
+                  : post.audioStatus === 'ready'
+                  ? 'Regenerate audio'
+                  : 'Generate audio'
+              }
+            >
+              <Volume2 className="h-4 w-4" />
             </button>
           )}
           

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, Info, Zap, Upload, Eye } from 'lucide-react';
+import { Plus, Search, Filter, Info, Zap, Upload, Eye, Volume2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BlogPost } from '../types';
 import { storage } from '../utils/storage';
@@ -26,7 +26,6 @@ export default function Timeline() {
     };
 
     loadPosts();
-    // Refresh posts when component mounts
     window.addEventListener('focus', loadPosts);
     return () => window.removeEventListener('focus', loadPosts);
   }, []);
@@ -34,7 +33,6 @@ export default function Timeline() {
   useEffect(() => {
     let filtered = posts;
 
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(post =>
         post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -43,7 +41,6 @@ export default function Timeline() {
       );
     }
 
-    // Filter by status (updated to match new status system)
     if (statusFilter !== 'all') {
       filtered = filtered.filter(post => post.status === statusFilter);
     }
@@ -81,6 +78,57 @@ export default function Timeline() {
       toast.error(error instanceof Error ? error.message : 'Failed to publish post');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateAudio = async (post: BlogPost) => {
+    if (!post.storyblokId) {
+      toast.error('Post must be published before generating audio');
+      return;
+    }
+
+    // Update audio status to generating
+    const updatedPost = { ...post, audioStatus: 'generating' as const };
+    storage.updatePost(post.id, updatedPost);
+    setPosts(prev => prev.map(p => p.id === post.id ? updatedPost : p));
+    
+    toast.info('Generating audio... This may take a few minutes.');
+
+    try {
+      // Call the Netlify function
+      const response = await fetch('/.netlify/functions/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          space_id: parseInt(import.meta.env.VITE_STORYBLOK_SPACE_ID),
+          story_id: parseInt(post.storyblokId)
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate audio');
+      }
+
+      const result = await response.json();
+      console.log('Audio generation result:', result);
+
+      // Update post status to ready
+      const finalPost = { ...post, audioStatus: 'ready' as const };
+      storage.updatePost(post.id, finalPost);
+      setPosts(prev => prev.map(p => p.id === post.id ? finalPost : p));
+      
+      toast.success('Audio generated successfully! It will appear on the blog post.');
+    } catch (error) {
+      console.error('Audio generation error:', error);
+      
+      // Update status to error
+      const errorPost = { ...post, audioStatus: 'error' as const };
+      storage.updatePost(post.id, errorPost);
+      setPosts(prev => prev.map(p => p.id === post.id ? errorPost : p));
+      
+      toast.error('Failed to generate audio. Please try again.');
     }
   };
 
@@ -123,10 +171,11 @@ export default function Timeline() {
     }
   };
 
-  // Calculate stats with refined labels
+  // Calculate stats
   const totalPosts = posts.length;
   const localDrafts = posts.filter(p => p.status === 'generated').length;
   const publishedPosts = posts.filter(p => p.status === 'published').length;
+  const postsWithAudio = posts.filter(p => p.audioStatus === 'ready').length;
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
@@ -140,7 +189,7 @@ export default function Timeline() {
         >
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Content Timeline</h1>
-            <p className="text-lg text-gray-600">Manage your AI-generated blog posts</p>
+            <p className="text-lg text-gray-600">Manage your AI-generated blog posts with audio</p>
           </div>
           
           <Link
@@ -152,7 +201,7 @@ export default function Timeline() {
           </Link>
         </motion.div>
 
-        {/* Workflow Guide */}
+        {/* Enhanced Workflow Guide */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -162,8 +211,8 @@ export default function Timeline() {
           <div className="flex items-start space-x-3">
             <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">📝 Content Workflow</h3>
-              <div className="grid md:grid-cols-3 gap-4 text-sm">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">🎵 Enhanced AI Workflow</h3>
+              <div className="grid md:grid-cols-4 gap-4 text-sm">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                     <Zap className="h-4 w-4 text-blue-600" />
@@ -183,12 +232,21 @@ export default function Timeline() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                    <Volume2 className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">3. Audio</p>
+                    <p className="text-gray-600">Generate TTS with ElevenLabs</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                     <Eye className="h-4 w-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">3. View</p>
-                    <p className="text-gray-600">Instantly visible in blog</p>
+                    <p className="font-medium text-gray-900">4. Experience</p>
+                    <p className="text-gray-600">Multi-modal content live</p>
                   </div>
                 </div>
               </div>
@@ -204,7 +262,6 @@ export default function Timeline() {
           className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8"
         >
           <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-            {/* Search */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input
@@ -216,7 +273,6 @@ export default function Timeline() {
               />
             </div>
 
-            {/* Status Filter */}
             <div className="flex items-center space-x-2">
               <Filter className="h-5 w-5 text-gray-400" />
               <select
@@ -231,9 +287,9 @@ export default function Timeline() {
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Enhanced Stats */}
           <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-4 gap-4 text-center">
               <div>
                 <p className="text-2xl font-bold text-gray-900">{totalPosts}</p>
                 <p className="text-sm text-gray-600">Total Posts</p>
@@ -241,12 +297,14 @@ export default function Timeline() {
               <div>
                 <p className="text-2xl font-bold text-blue-600">{localDrafts}</p>
                 <p className="text-sm text-gray-600">Local Drafts</p>
-                <p className="text-xs text-gray-500 mt-1">Ready to publish</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-600">{publishedPosts}</p>
                 <p className="text-sm text-gray-600">Published Live</p>
-                <p className="text-xs text-gray-500 mt-1">Visible in blog</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-orange-600">{postsWithAudio}</p>
+                <p className="text-sm text-gray-600">With Audio</p>
               </div>
             </div>
           </div>
@@ -270,7 +328,7 @@ export default function Timeline() {
               </h3>
               <p className="text-gray-600 mb-6">
                 {posts.length === 0 
-                  ? 'Create your first AI-generated blog post to get started'
+                  ? 'Create your first AI-generated blog post with audio to get started'
                   : 'Try adjusting your search or filter criteria'
                 }
               </p>
@@ -299,6 +357,7 @@ export default function Timeline() {
                     onPublish={handlePublish}
                     onRegenerate={handleRegenerate}
                     onDelete={handleDelete}
+                    onGenerateAudio={handleGenerateAudio}
                   />
                 </motion.div>
               ))}

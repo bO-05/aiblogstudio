@@ -5,6 +5,7 @@ import { storyblokService } from '../services/storyblokService';
 import { StoryblokStory } from '../types';
 import BlogLayout from '../components/BlogLayout';
 import RichTextRenderer from '../components/RichTextRenderer';
+import AudioPlayer from '../components/AudioPlayer';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export default function BlogPost() {
@@ -24,7 +25,6 @@ export default function BlogPost() {
       try {
         console.log('🔍 BlogPost - Fetching post with slug:', slug);
         
-        // Try to fetch the specific story by slug
         const stories = await storyblokService.getStories();
         console.log('📚 BlogPost - All stories fetched:', stories.length);
         
@@ -40,7 +40,9 @@ export default function BlogPost() {
               slug: story.slug,
               full_slug: story.full_slug,
               hasImage: !!story.content?.image,
-              imageUrl: story.content?.image
+              hasAudio: !!story.content?.audio,
+              imageUrl: story.content?.image,
+              audioUrl: story.content?.audio
             });
           }
           
@@ -51,13 +53,13 @@ export default function BlogPost() {
           console.log('📖 BlogPost - Setting post data:', {
             title: foundPost.content?.title,
             hasImage: !!foundPost.content?.image,
+            hasAudio: !!foundPost.content?.audio,
             imageUrl: foundPost.content?.image,
-            imageType: typeof foundPost.content?.image
+            audioUrl: foundPost.content?.audio
           });
           setPost(foundPost);
         } else {
           console.error('❌ BlogPost - No post found with slug:', slug);
-          console.log('Available slugs:', stories.map(s => ({ name: s.name, slug: s.slug, full_slug: s.full_slug })));
           setError('Post not found');
         }
       } catch (error) {
@@ -95,10 +97,25 @@ export default function BlogPost() {
       tone={post.content.tone}
       showBackButton
     >
+      {/* Audio Player - Show if audio is available */}
+      {post.content.audio && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8"
+        >
+          <AudioPlayer 
+            audioUrl={post.content.audio} 
+            title={post.content.title || 'Blog Post Audio'}
+          />
+        </motion.div>
+      )}
+
       <motion.article
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.8, delay: post.content.audio ? 0.2 : 0 }}
         className="max-w-none"
       >
         {post.content.content && (
@@ -121,7 +138,7 @@ export default function BlogPost() {
             Enjoyed this AI-generated content?
           </h3>
           <p className="text-gray-600 mb-6">
-            This post was created using advanced AI technology and published through Storyblok CMS.
+            This post was created using advanced AI technology including {post.content.audio ? 'text-to-speech audio, ' : ''}content generation, and image creation, then published through Storyblok CMS.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
             <a

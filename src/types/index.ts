@@ -11,6 +11,8 @@ export interface BlogPost {
   createdAt: string;
   publishedAt?: string;
   storyblokId?: string;
+  audioUrl?: string;
+  audioStatus?: 'none' | 'generating' | 'ready' | 'error';
 }
 
 export interface GenerationRequest {
@@ -31,6 +33,7 @@ export interface StoryblokStory {
     image?: string;
     theme?: string;
     tone?: string;
+    audio?: string;
   };
   published_at?: string;
 }
