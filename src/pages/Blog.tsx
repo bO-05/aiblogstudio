@@ -117,10 +117,6 @@ export default function Blog() {
                 <p className="text-sm text-gray-600">Unique Topics</p>
               </div>
               <div className="w-px h-8 bg-gray-300"></div>
-              <div className="text-center">
-                <p className="text-2xl font-bold text-green-600">100%</p>
-                <p className="text-sm text-gray-600">AI Generated</p>
-              </div>
             </motion.div>
           </motion.div>
         </div>
