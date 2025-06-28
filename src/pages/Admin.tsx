@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Wand2, AlertCircle, Clock, Info, Sparkles, Timeline, CheckCircle } from 'lucide-react';
+import { Wand2, AlertCircle, Clock, Info, Sparkles, Baseline as Timeline, CheckCircle } from 'lucide-react';
 import { GenerationRequest, BlogPost } from '../types';
 import { aiService } from '../services/aiService';
 import { storage } from '../utils/storage';
