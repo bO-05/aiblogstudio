@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, Timeline, Edit3, ArrowRight, X, Sparkles } from 'lucide-react';
+import { CheckCircle, Baseline as Timeline, Edit3, ArrowRight, X, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BlogPost } from '../types';
 
