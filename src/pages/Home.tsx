@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Zap, Globe, ArrowRight, AlertCircle, ExternalLink, Workflow, Clock, CheckCircle } from 'lucide-react';
+import { Sparkles, Zap, Globe, ArrowRight, AlertCircle, ExternalLink, Workflow, Clock, CheckCircle, Volume2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { storyblokService } from '../services/storyblokService';
 import { StoryblokStory } from '../types';
@@ -55,7 +55,7 @@ export default function Home() {
             </div>
             
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Generate stunning blog posts with AI-powered content creation and beautiful images. 
+              Generate stunning blog posts with AI-powered content creation, beautiful images, and natural speech audio. 
               Publish directly to Storyblok CMS with just a few clicks.
             </p>
 
@@ -104,15 +104,15 @@ export default function Home() {
             <div className="flex items-center justify-center space-x-2 mb-4">
               <Workflow className="h-8 w-8 text-purple-600" />
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Simple 3-Step Workflow
+                Simple 4-Step Workflow
               </h2>
             </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              From idea to published blog post in minutes
+              From idea to published multimedia blog post in minutes
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
                 icon: Zap,
@@ -123,18 +123,26 @@ export default function Home() {
                 status: 'Local Draft'
               },
               {
-                icon: Globe,
+                icon: Volume2,
                 step: '2',
+                title: 'Add Audio',
+                description: 'Generate natural-sounding speech with ElevenLabs text-to-speech for accessibility and engagement.',
+                color: 'text-orange-600 bg-orange-100',
+                status: 'Audio Ready'
+              },
+              {
+                icon: Globe,
+                step: '3',
                 title: 'Publish to Storyblok',
-                description: 'One-click publishing sends your content to Storyblok CMS and makes it instantly live.',
+                description: 'One-click publishing sends your multimedia content to Storyblok CMS and makes it instantly live.',
                 color: 'text-purple-600 bg-purple-100',
                 status: 'Published Live'
               },
               {
                 icon: CheckCircle,
-                step: '3',
+                step: '4',
                 title: 'View & Share',
-                description: 'Your blog post is immediately visible to readers with professional formatting and SEO optimization.',
+                description: 'Your blog post is immediately visible with professional formatting, images, and audio playback.',
                 color: 'text-green-600 bg-green-100',
                 status: 'Live on Blog'
               }
@@ -164,8 +172,8 @@ export default function Home() {
                 </div>
 
                 {/* Connector Arrow */}
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                {index < 3 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2">
                     <ArrowRight className="h-6 w-6 text-gray-300" />
                   </div>
                 )}
@@ -189,7 +197,7 @@ export default function Home() {
               Powerful AI-Driven Features
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Everything you need to create and publish professional blog content
+              Everything you need to create and publish professional multimedia blog content
             </p>
           </motion.div>
 
@@ -208,9 +216,15 @@ export default function Home() {
                 color: 'text-purple-600 bg-purple-100'
               },
               {
+                icon: Volume2,
+                title: 'AI Text-to-Speech',
+                description: 'Convert your content to natural-sounding audio with ElevenLabs for accessibility and enhanced user engagement.',
+                color: 'text-orange-600 bg-orange-100'
+              },
+              {
                 icon: Globe,
                 title: 'Instant Publishing',
-                description: 'Seamlessly publish to Storyblok CMS with automatic deployment. Your content goes live immediately.',
+                description: 'Seamlessly publish multimedia content to Storyblok CMS with automatic deployment. Your content goes live immediately.',
                 color: 'text-blue-600 bg-blue-100'
               }
             ].map((feature, index) => (
@@ -247,7 +261,7 @@ export default function Home() {
               Latest AI-Generated Posts
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Check out our latest AI-generated content published through Storyblok
+              Check out our latest AI-generated multimedia content published through Storyblok
             </p>
           </motion.div>
 
@@ -287,12 +301,20 @@ export default function Home() {
                     className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   >
                     {post.content.image && (
-                      <div className="aspect-video bg-gradient-to-r from-purple-100 to-blue-100">
+                      <div className="aspect-video bg-gradient-to-r from-purple-100 to-blue-100 relative">
                         <img 
                           src={post.content.image} 
                           alt={post.content.title}
                           className="w-full h-full object-cover"
                         />
+                        {/* Audio indicator */}
+                        {post.content.audio && (
+                          <div className="absolute top-3 left-3">
+                            <div className="bg-white/90 backdrop-blur-sm rounded-full p-2">
+                              <Volume2 className="h-4 w-4 text-orange-600" />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                     <div className="p-6">
@@ -345,7 +367,7 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">No blog posts yet</h3>
               <p className="text-gray-600 mb-6">
-                Create your first AI-generated blog post to see it here
+                Create your first AI-generated multimedia blog post to see it here
               </p>
               <Link
                 to="/login"
@@ -369,10 +391,10 @@ export default function Home() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to Create Amazing Content?
+              Ready to Create Amazing Multimedia Content?
             </h2>
             <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
-              Join the future of content creation with AI-powered blog generation and seamless Storyblok integration.
+              Join the future of content creation with AI-powered blog generation, stunning visuals, natural speech audio, and seamless Storyblok integration.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link

@@ -37,7 +37,7 @@ export const storyblokService = {
         timestamp: new Date().toISOString()
       });
       
-      // Debug each story's image field in detail
+      // Debug each story's image and audio fields in detail
       response.data.stories.forEach((story: any, index: number) => {
         console.log(`📖 Story ${index + 1}: "${story.name}"`);
         console.log('  - Slug:', story.slug);
@@ -78,12 +78,25 @@ export const storyblokService = {
         } else {
           console.log('  - ❌ No image field found');
         }
+
+        // Debug audio field
+        if (story.content?.audio) {
+          console.log('  - 🎵 Audio field details:');
+          console.log('    - Raw value:', story.content.audio);
+          console.log('    - Type:', typeof story.content.audio);
+          console.log('    - Is string:', typeof story.content.audio === 'string');
+          console.log('    - Length:', story.content.audio?.length || 0);
+          console.log('    - Starts with http:', story.content.audio?.startsWith?.('http'));
+        } else {
+          console.log('  - ❌ No audio field found');
+        }
         console.log('  ---');
       });
       
-      // Transform stories to ensure image URLs are properly extracted
+      // Transform stories to ensure image and audio URLs are properly extracted
       const transformedStories = response.data.stories.map((story: any) => {
         let imageUrl = '';
+        let audioUrl = '';
         
         if (story.content?.image) {
           if (typeof story.content.image === 'string') {
@@ -100,17 +113,34 @@ export const storyblokService = {
             imageUrl = ''; // Keep empty
           }
         }
+
+        if (story.content?.audio) {
+          if (typeof story.content.audio === 'string') {
+            // External URL - use as is
+            audioUrl = story.content.audio;
+            console.log(`🔄 Story "${story.name}" - Using string audio URL:`, audioUrl);
+          } else if (typeof story.content.audio === 'object' && story.content.audio?.filename) {
+            // Storyblok asset object - extract filename
+            audioUrl = story.content.audio.filename;
+            console.log(`🔄 Story "${story.name}" - Extracted audio URL from asset object:`, audioUrl);
+          } else if (typeof story.content.audio === 'object') {
+            // Empty asset object
+            console.log(`❌ Story "${story.name}" - Audio asset object is empty:`, story.content.audio);
+            audioUrl = ''; // Keep empty
+          }
+        }
         
         return {
           ...story,
           content: {
             ...story.content,
-            image: imageUrl // Ensure it's always a string URL
+            image: imageUrl, // Ensure it's always a string URL
+            audio: audioUrl  // Ensure it's always a string URL
           }
         };
       });
       
-      console.log('🔄 Transformed stories with normalized image URLs');
+      console.log('🔄 Transformed stories with normalized image and audio URLs');
       
       return transformedStories;
     } catch (error: any) {
@@ -155,6 +185,9 @@ export const storyblokService = {
       console.log('- Post image URL:', post.imageUrl);
       console.log('- Image URL type:', typeof post.imageUrl);
       console.log('- Image URL valid:', !!post.imageUrl && post.imageUrl.startsWith('http'));
+      console.log('- Post audio URL:', post.audioUrl);
+      console.log('- Audio URL type:', typeof post.audioUrl);
+      console.log('- Audio URL valid:', !!post.audioUrl && post.audioUrl.startsWith('http'));
       console.log('- Post has storyblokId:', !!post.storyblokId);
       
       if (!spaceId) {
@@ -204,6 +237,25 @@ export const storyblokService = {
         console.warn('⚠️ No valid image URL provided, will create post without image');
         imageFieldValue = '';
       }
+
+      // Validate and prepare audio URL
+      let audioFieldValue = '';
+      if (post.audioUrl && typeof post.audioUrl === 'string' && post.audioUrl.trim()) {
+        // Clean the URL and ensure it's valid
+        const cleanUrl = post.audioUrl.trim();
+        
+        try {
+          new URL(cleanUrl); // Validate URL format
+          audioFieldValue = cleanUrl;
+          console.log('✅ Valid external audio URL confirmed:', audioFieldValue);
+        } catch (urlError) {
+          console.warn('⚠️ Invalid audio URL format, will create post without audio:', cleanUrl);
+          audioFieldValue = '';
+        }
+      } else {
+        console.warn('⚠️ No valid audio URL provided, will create post without audio');
+        audioFieldValue = '';
+      }
       
       // CRITICAL: Create the content object with the exact field structure
       const contentObject = {
@@ -219,6 +271,11 @@ export const storyblokService = {
       if (imageFieldValue) {
         contentObject.image = imageFieldValue;
         console.log('🔧 Using direct string URL for image field');
+      }
+
+      if (audioFieldValue) {
+        contentObject.audio = audioFieldValue;
+        console.log('🔧 Using direct string URL for audio field');
       }
       
       const storyData = {
@@ -240,6 +297,9 @@ export const storyblokService = {
       console.log('- Image field present:', 'image' in storyData.story.content);
       console.log('- Image field value:', storyData.story.content.image || 'NOT SET');
       console.log('- Image field type:', typeof storyData.story.content.image);
+      console.log('- Audio field present:', 'audio' in storyData.story.content);
+      console.log('- Audio field value:', storyData.story.content.audio || 'NOT SET');
+      console.log('- Audio field type:', typeof storyData.story.content.audio);
       console.log('- Full content object:', JSON.stringify(storyData.story.content, null, 2));
 
       // Step 1: Create the story as draft
@@ -264,6 +324,7 @@ export const storyblokService = {
         console.log('- Story ID:', storyId);
         console.log('- Published status:', true);
         console.log('- Image field in content:', createResponse.data.story.content?.image || 'NOT FOUND');
+        console.log('- Audio field in content:', createResponse.data.story.content?.audio || 'NOT FOUND');
         
         return storyId.toString();
       } catch (publishError) {
@@ -398,6 +459,19 @@ export const storyblokService = {
           console.warn('⚠️ Invalid image URL format for update:', cleanUrl);
         }
       }
+
+      // Validate and prepare audio URL
+      let audioFieldValue = '';
+      if (post.audioUrl && typeof post.audioUrl === 'string' && post.audioUrl.trim()) {
+        const cleanUrl = post.audioUrl.trim();
+        try {
+          new URL(cleanUrl);
+          audioFieldValue = cleanUrl;
+          console.log('✅ Valid external audio URL for update:', cleanUrl);
+        } catch {
+          console.warn('⚠️ Invalid audio URL format for update:', cleanUrl);
+        }
+      }
       
       const contentObject = {
         component: 'blog_post',
@@ -412,6 +486,11 @@ export const storyblokService = {
       if (imageFieldValue) {
         contentObject.image = imageFieldValue;
       }
+
+      // Only add audio field if we have a valid URL
+      if (audioFieldValue) {
+        contentObject.audio = audioFieldValue;
+      }
       
       const storyData = {
         story: {
@@ -423,6 +502,8 @@ export const storyblokService = {
       console.log('- Content keys:', Object.keys(contentObject));
       console.log('- Image field present:', 'image' in contentObject);
       console.log('- Image field value:', contentObject.image || 'NOT SET');
+      console.log('- Audio field present:', 'audio' in contentObject);
+      console.log('- Audio field value:', contentObject.audio || 'NOT SET');
 
       // Update the story
       await storyblokManagement.put(`spaces/${spaceId}/stories/${storyblokId}`, storyData);
@@ -434,6 +515,53 @@ export const storyblokService = {
       return true;
     } catch (error: any) {
       console.error('❌ Error updating Storyblok story:', {
+        message: error.message,
+        status: error.status,
+        response: error.response
+      });
+      return false;
+    }
+  },
+
+  async addAudioToExistingPost(storyblokId: string, audioUrl: string): Promise<boolean> {
+    try {
+      const spaceId = import.meta.env.VITE_STORYBLOK_SPACE_ID;
+      
+      console.log('🎵 Adding audio to existing Storyblok post:', storyblokId);
+      console.log('- Audio URL:', audioUrl);
+      
+      // First, get the existing story content
+      const getResponse = await storyblokManagement.get(`spaces/${spaceId}/stories/${storyblokId}`);
+      const existingContent = getResponse.data.story.content;
+      
+      console.log('📖 Retrieved existing story content');
+      
+      // Update the content with the audio field
+      const updatedContent = {
+        ...existingContent,
+        audio: audioUrl
+      };
+      
+      const storyData = {
+        story: {
+          content: updatedContent
+        }
+      };
+
+      console.log('📤 AUDIO UPDATE PAYLOAD:');
+      console.log('- Adding audio field:', audioUrl);
+      console.log('- Content keys after update:', Object.keys(updatedContent));
+
+      // Update the story
+      await storyblokManagement.put(`spaces/${spaceId}/stories/${storyblokId}`, storyData);
+      
+      // Publish the updated story immediately
+      await storyblokManagement.get(`spaces/${spaceId}/stories/${storyblokId}/publish`);
+      
+      console.log('✅ Audio added to story and published successfully');
+      return true;
+    } catch (error: any) {
+      console.error('❌ Error adding audio to Storyblok story:', {
         message: error.message,
         status: error.status,
         response: error.response

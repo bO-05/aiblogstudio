@@ -44,9 +44,19 @@ export const elevenLabsService = {
       
       console.log('✅ Audio generated successfully');
       return audioUrl;
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error generating audio:', error);
-      throw new Error('Failed to generate audio with ElevenLabs');
+      
+      // Provide more specific error messages
+      if (error.response?.status === 404) {
+        throw new Error('ElevenLabs voice not found. Please check the voice ID.');
+      } else if (error.response?.status === 401) {
+        throw new Error('Invalid ElevenLabs API key. Please check your credentials.');
+      } else if (error.response?.status === 429) {
+        throw new Error('ElevenLabs rate limit exceeded. Please try again later.');
+      } else {
+        throw new Error('Failed to generate audio with ElevenLabs');
+      }
     }
   },
 

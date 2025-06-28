@@ -139,7 +139,25 @@ export default function Timeline() {
       storage.updatePost(post.id, finalPost);
       setPosts(prev => prev.map(p => p.id === post.id ? finalPost : p));
       
-      toast.success('Audio generated successfully! You can now listen to your post.');
+      // If the post is already published to Storyblok, update it there too
+      if (post.status === 'published' && post.storyblokId) {
+        console.log('🔄 Post is published, updating Storyblok with audio...');
+        try {
+          const success = await storyblokService.addAudioToExistingPost(post.storyblokId, audioUrl);
+          if (success) {
+            console.log('✅ Audio added to published Storyblok post');
+            toast.success('Audio generated and added to live blog post!');
+          } else {
+            console.warn('⚠️ Audio generated locally but failed to update Storyblok');
+            toast.success('Audio generated successfully! Republish to add audio to live blog.');
+          }
+        } catch (storyblokError) {
+          console.error('❌ Failed to update Storyblok with audio:', storyblokError);
+          toast.success('Audio generated successfully! Republish to add audio to live blog.');
+        }
+      } else {
+        toast.success('Audio generated successfully! Publish the post to make audio available on blog.');
+      }
     } catch (error) {
       console.error('Audio generation error:', error);
       
