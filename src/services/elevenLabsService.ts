@@ -12,8 +12,8 @@ export const elevenLabsService = {
         throw new Error('ElevenLabs API key not found');
       }
 
-      // Use Rachel voice (default professional voice)
-      const voiceId = 'Rachel';
+      // Use Rachel voice ID (actual UUID for Rachel voice)
+      const voiceId = '21m00Tcm4TlvDq8ikWAM';
       
       // Clean and prepare text for TTS
       const cleanText = this.prepareTextForTTS(text);
@@ -78,7 +78,7 @@ export const elevenLabsService = {
         throw new Error('ElevenLabs API key not found');
       }
 
-      const voiceId = 'Rachel';
+      const voiceId = '21m00Tcm4TlvDq8ikWAM';
       const cleanText = this.prepareTextForTTS(text);
       
       const response = await axios.post(

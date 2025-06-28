@@ -1,10 +1,8 @@
-import { Handler } from '@netlify/functions';
-
 // ElevenLabs configuration
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
-const VOICE_ID = 'Rachel'; // Professional female voice
+const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel voice UUID
 
-const prepareTextForTTS = (content: string): string => {
+const prepareTextForTTS = (content) => {
   // Remove markdown formatting
   let cleanText = content
     .replace(/#{1,6}\s+/g, '') // Remove headers
@@ -24,7 +22,7 @@ const prepareTextForTTS = (content: string): string => {
   return cleanText;
 };
 
-const generateAudioFromText = async (text: string): Promise<ArrayBuffer> => {
+const generateAudioFromText = async (text) => {
   try {
     console.log('🎵 Generating audio with ElevenLabs...');
     
@@ -68,7 +66,7 @@ const generateAudioFromText = async (text: string): Promise<ArrayBuffer> => {
   }
 };
 
-export const handler: Handler = async (event) => {
+exports.handler = async (event) => {
   // Handle CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
