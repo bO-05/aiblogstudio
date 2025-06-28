@@ -38,12 +38,14 @@ export const elevenLabsService = {
         }
       );
 
-      // Convert blob to URL
+      // Convert blob to base64 data URL for persistent storage
       const audioBlob = new Blob([response.data], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
       
-      console.log('✅ Audio generated successfully');
-      return audioUrl;
+      // Convert to base64 data URL instead of blob URL
+      const base64Audio = await this.blobToBase64(audioBlob);
+      
+      console.log('✅ Audio generated successfully as base64 data URL');
+      return base64Audio;
     } catch (error: any) {
       console.error('❌ Error generating audio:', error);
       
@@ -58,6 +60,19 @@ export const elevenLabsService = {
         throw new Error('Failed to generate audio with ElevenLabs');
       }
     }
+  },
+
+  // Convert blob to base64 data URL for persistent storage
+  async blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
   },
 
   prepareTextForTTS(content: string): string {

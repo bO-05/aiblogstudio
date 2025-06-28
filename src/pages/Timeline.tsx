@@ -94,47 +94,18 @@ export default function Timeline() {
       // Prepare text content for TTS
       const textContent = `${post.title}. ${post.excerpt}. ${post.content}`;
       
-      // Try client-side generation first (for development)
-      let audioUrl: string;
+      console.log('🎵 Generating audio for post:', post.title);
       
-      try {
-        console.log('🎵 Attempting client-side audio generation...');
-        audioUrl = await elevenLabsService.generateAudio(textContent);
-        console.log('✅ Client-side audio generation successful');
-      } catch (clientError) {
-        console.log('⚠️ Client-side generation failed, trying Netlify function...');
-        
-        // Fallback to Netlify function (for production)
-        const response = await fetch('/.netlify/functions/text-to-speech', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            text: textContent
-          })
-        });
+      // Generate audio using ElevenLabs (now returns base64 data URL)
+      const audioDataUrl = await elevenLabsService.generateAudio(textContent);
+      
+      console.log('✅ Audio generated successfully as data URL');
 
-        if (!response.ok) {
-          throw new Error(`Netlify function failed: ${response.status}`);
-        }
-
-        const result = await response.json();
-        
-        // Convert base64 to blob URL
-        const audioBlob = new Blob([
-          new Uint8Array(atob(result.audio).split('').map(c => c.charCodeAt(0)))
-        ], { type: 'audio/mpeg' });
-        
-        audioUrl = URL.createObjectURL(audioBlob);
-        console.log('✅ Netlify function audio generation successful');
-      }
-
-      // Update post with audio URL
+      // Update post with audio data URL
       const finalPost = { 
         ...post, 
         audioStatus: 'ready' as const,
-        audioUrl: audioUrl
+        audioUrl: audioDataUrl // This is now a data:audio/mpeg;base64,... URL
       };
       storage.updatePost(post.id, finalPost);
       setPosts(prev => prev.map(p => p.id === post.id ? finalPost : p));
@@ -143,7 +114,7 @@ export default function Timeline() {
       if (post.status === 'published' && post.storyblokId) {
         console.log('🔄 Post is published, updating Storyblok with audio...');
         try {
-          const success = await storyblokService.addAudioToExistingPost(post.storyblokId, audioUrl);
+          const success = await storyblokService.addAudioToExistingPost(post.storyblokId, audioDataUrl);
           if (success) {
             console.log('✅ Audio added to published Storyblok post');
             toast.success('Audio generated and added to live blog post!');
@@ -290,7 +261,7 @@ export default function Timeline() {
               </div>
               <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-sm text-green-800">
-                  <strong>✅ ElevenLabs Integration Active:</strong> Audio generation works in both development and production environments. Click the audio button on any post to generate speech!
+                  <strong>✅ Audio Storage Fixed:</strong> Audio is now stored as persistent data URLs that work across sessions. Generated audio will be available on live blog posts!
                 </p>
               </div>
             </div>
