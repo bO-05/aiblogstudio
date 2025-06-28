@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Search, Filter, Info, Zap, Upload, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BlogPost } from '../types';
 import { storage } from '../utils/storage';
@@ -15,7 +15,7 @@ export default function Timeline() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'generated' | 'published'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'generated' | 'published'>('all');
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -43,7 +43,7 @@ export default function Timeline() {
       );
     }
 
-    // Filter by status
+    // Filter by status (updated to match new status system)
     if (statusFilter !== 'all') {
       filtered = filtered.filter(post => post.status === statusFilter);
     }
@@ -75,7 +75,7 @@ export default function Timeline() {
         };
         storage.updatePost(post.id, updatedPost);
         setPosts(prev => prev.map(p => p.id === post.id ? updatedPost : p));
-        toast.success('Post published to Storyblok successfully!');
+        toast.success('Post published and live on blog!');
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to publish post');
@@ -123,10 +123,9 @@ export default function Timeline() {
     }
   };
 
-  // Calculate stats
+  // Calculate stats with refined labels
   const totalPosts = posts.length;
-  const generatedPosts = posts.filter(p => p.status === 'generated').length;
-  const draftPosts = posts.filter(p => p.status === 'draft').length;
+  const localDrafts = posts.filter(p => p.status === 'generated').length;
   const publishedPosts = posts.filter(p => p.status === 'published').length;
 
   return (
@@ -141,7 +140,7 @@ export default function Timeline() {
         >
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Content Timeline</h1>
-            <p className="text-lg text-gray-600">Manage your generated blog posts</p>
+            <p className="text-lg text-gray-600">Manage your AI-generated blog posts</p>
           </div>
           
           <Link
@@ -153,11 +152,55 @@ export default function Timeline() {
           </Link>
         </motion.div>
 
-        {/* Search and Filters */}
+        {/* Workflow Guide */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.8 }}
+          className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-6 mb-8"
+        >
+          <div className="flex items-start space-x-3">
+            <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">📝 Content Workflow</h3>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">1. Generate</p>
+                    <p className="text-gray-600">AI creates content locally</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Upload className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">2. Publish</p>
+                    <p className="text-gray-600">Send to Storyblok & go live</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <Eye className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">3. View</p>
+                    <p className="text-gray-600">Instantly visible in blog</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Search and Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
           className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8"
         >
           <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
@@ -182,31 +225,28 @@ export default function Timeline() {
                 className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="all">All Status</option>
-                <option value="generated">Generated</option>
-                <option value="draft">Draft (in Storyblok)</option>
-                <option value="published">Published</option>
+                <option value="generated">Local Drafts</option>
+                <option value="published">Published Live</option>
               </select>
             </div>
           </div>
 
           {/* Stats */}
           <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+            <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-2xl font-bold text-gray-900">{totalPosts}</p>
                 <p className="text-sm text-gray-600">Total Posts</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-600">{generatedPosts}</p>
-                <p className="text-sm text-gray-600">Generated</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-yellow-600">{draftPosts}</p>
-                <p className="text-sm text-gray-600">Draft</p>
+                <p className="text-2xl font-bold text-blue-600">{localDrafts}</p>
+                <p className="text-sm text-gray-600">Local Drafts</p>
+                <p className="text-xs text-gray-500 mt-1">Ready to publish</p>
               </div>
               <div>
                 <p className="text-2xl font-bold text-green-600">{publishedPosts}</p>
-                <p className="text-sm text-gray-600">Published</p>
+                <p className="text-sm text-gray-600">Published Live</p>
+                <p className="text-xs text-gray-500 mt-1">Visible in blog</p>
               </div>
             </div>
           </div>
@@ -216,7 +256,7 @@ export default function Timeline() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
         >
           {filteredPosts.length === 0 ? (
             <div className="text-center py-12">

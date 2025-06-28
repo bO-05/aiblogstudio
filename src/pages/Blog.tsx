@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Calendar, ArrowRight, Search, Filter, Eye, Plus } from 'lucide-react';
+import { Calendar, ArrowRight, Search, Filter, Eye, Plus, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { storyblokService } from '../services/storyblokService';
 import { StoryblokStory } from '../types';
@@ -68,7 +68,7 @@ export default function Blog() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <Navbar variant="blog" />
+        <Navbar />
         <div className="flex justify-center py-12">
           <LoadingSpinner size="lg" text="Loading blog posts..." />
         </div>
@@ -78,7 +78,7 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <Navbar variant="blog" />
+      <Navbar />
       
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
@@ -89,13 +89,39 @@ export default function Blog() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent mb-6">
-              AI-Generated Blog
-            </h1>
+            <div className="flex items-center justify-center space-x-2 mb-6">
+              <Sparkles className="h-10 w-10 text-purple-600" />
+              <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                AI-Generated Blog
+              </h1>
+            </div>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
               Discover cutting-edge insights powered by artificial intelligence. 
               Content generated with Mistral LLM and beautiful images by Imagen4 AI.
             </p>
+            
+            {/* Quick Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="inline-flex items-center space-x-6 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 border border-white/20"
+            >
+              <div className="text-center">
+                <p className="text-2xl font-bold text-purple-600">{posts.length}</p>
+                <p className="text-sm text-gray-600">Published Posts</p>
+              </div>
+              <div className="w-px h-8 bg-gray-300"></div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-blue-600">{themes.length}</p>
+                <p className="text-sm text-gray-600">Unique Topics</p>
+              </div>
+              <div className="w-px h-8 bg-gray-300"></div>
+              <div className="text-center">
+                <p className="text-2xl font-bold text-green-600">100%</p>
+                <p className="text-sm text-gray-600">AI Generated</p>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
 
@@ -158,22 +184,12 @@ export default function Blog() {
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Results Info */}
           <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{posts.length}</p>
-                <p className="text-sm text-gray-600">Total Posts</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-blue-600">{themes.length}</p>
-                <p className="text-sm text-gray-600">Unique Themes</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-green-600">{filteredPosts.length}</p>
-                <p className="text-sm text-gray-600">Showing</p>
-              </div>
-            </div>
+            <p className="text-sm text-gray-600">
+              Showing <span className="font-semibold text-purple-600">{filteredPosts.length}</span> of <span className="font-semibold">{posts.length}</span> posts
+              {searchTerm && ` matching "${searchTerm}"`}
+            </p>
           </div>
         </motion.div>
 
@@ -252,6 +268,9 @@ export default function Blog() {
                             {format(new Date(post.published_at), 'MMM d, yyyy')}
                           </div>
                         )}
+                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                          Live
+                        </span>
                       </div>
 
                       <h2 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -285,6 +304,24 @@ export default function Blog() {
           )}
         </motion.div>
       </main>
+
+      {/* Footer */}
+      <footer className="bg-white/80 backdrop-blur-sm border-t border-gray-200 mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="text-center text-gray-600">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <Sparkles className="h-5 w-5 text-purple-600" />
+              <p className="font-semibold">Powered by AI Blog Studio</p>
+            </div>
+            <p className="text-sm">
+              Content generated with Mistral LLM • Images by Imagen4 AI • Published via Storyblok
+            </p>
+            <p className="text-xs mt-2 text-gray-500">
+              Experience the future of content creation with AI-powered blogging
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

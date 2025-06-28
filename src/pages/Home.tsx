@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Zap, Globe, ArrowRight, AlertCircle, ExternalLink } from 'lucide-react';
+import { Sparkles, Zap, Globe, ArrowRight, AlertCircle, ExternalLink, Workflow, Clock, CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { storyblokService } from '../services/storyblokService';
 import { StoryblokStory } from '../types';
@@ -91,8 +91,92 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Workflow Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white/50">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="flex items-center justify-center space-x-2 mb-4">
+              <Workflow className="h-8 w-8 text-purple-600" />
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Simple 3-Step Workflow
+              </h2>
+            </div>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              From idea to published blog post in minutes
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Zap,
+                step: '1',
+                title: 'Generate with AI',
+                description: 'Enter your topic and let Mistral LLM create compelling content with beautiful Imagen4 visuals.',
+                color: 'text-blue-600 bg-blue-100',
+                status: 'Local Draft'
+              },
+              {
+                icon: Globe,
+                step: '2',
+                title: 'Publish to Storyblok',
+                description: 'One-click publishing sends your content to Storyblok CMS and makes it instantly live.',
+                color: 'text-purple-600 bg-purple-100',
+                status: 'Published Live'
+              },
+              {
+                icon: CheckCircle,
+                step: '3',
+                title: 'View & Share',
+                description: 'Your blog post is immediately visible to readers with professional formatting and SEO optimization.',
+                color: 'text-green-600 bg-green-100',
+                status: 'Live on Blog'
+              }
+            ].map((step, index) => (
+              <motion.div
+                key={step.title}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.2, duration: 0.8 }}
+                viewport={{ once: true }}
+                className="relative bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300"
+              >
+                {/* Step Number */}
+                <div className="absolute -top-4 left-6">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                    {step.step}
+                  </div>
+                </div>
+
+                <div className={`w-12 h-12 rounded-lg ${step.color} flex items-center justify-center mb-4 mt-2`}>
+                  <step.icon className="h-6 w-6" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">{step.title}</h3>
+                <p className="text-gray-600 leading-relaxed mb-4">{step.description}</p>
+                <div className="inline-block px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm font-medium">
+                  {step.status}
+                </div>
+
+                {/* Connector Arrow */}
+                {index < 2 && (
+                  <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
+                    <ArrowRight className="h-6 w-6 text-gray-300" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -120,13 +204,13 @@ export default function Home() {
               {
                 icon: Sparkles,
                 title: 'AI Image Creation',
-                description: 'Generate beautiful, relevant images with FAL AI that perfectly complement your blog content.',
+                description: 'Generate beautiful, atmospheric images with Imagen4 AI that perfectly complement your blog content.',
                 color: 'text-purple-600 bg-purple-100'
               },
               {
                 icon: Globe,
-                title: 'Storyblok Integration',
-                description: 'Seamlessly publish your content to Storyblok CMS with automatic deployment to your live site.',
+                title: 'Instant Publishing',
+                description: 'Seamlessly publish to Storyblok CMS with automatic deployment. Your content goes live immediately.',
                 color: 'text-blue-600 bg-blue-100'
               }
             ].map((feature, index) => (
@@ -150,7 +234,7 @@ export default function Home() {
       </section>
 
       {/* Latest Posts Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white/50">
         <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

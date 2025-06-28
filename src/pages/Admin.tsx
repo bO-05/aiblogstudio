@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Wand2, AlertCircle, Clock } from 'lucide-react';
+import { Wand2, AlertCircle, Clock, Info, Sparkles, Globe, CheckCircle } from 'lucide-react';
 import { GenerationRequest, BlogPost } from '../types';
 import { aiService } from '../services/aiService';
 import { storyblokService } from '../services/storyblokService';
@@ -129,17 +129,64 @@ export default function Admin() {
           transition={{ duration: 0.8 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Generate Blog Post</h1>
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Wand2 className="h-10 w-10 text-purple-600" />
+            <h1 className="text-4xl font-bold text-gray-900">Generate Blog Post</h1>
+          </div>
           <p className="text-lg text-gray-600">
             Create engaging content with AI-powered tools
           </p>
+        </motion.div>
+
+        {/* Workflow Reminder */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1, duration: 0.8 }}
+          className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-200 p-6 mb-8"
+        >
+          <div className="flex items-start space-x-3">
+            <Info className="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">🚀 Instant Publishing Workflow</h3>
+              <div className="grid md:grid-cols-3 gap-4 text-sm">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Sparkles className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">AI Generation</p>
+                    <p className="text-gray-600">Content + Images</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Globe className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Auto-Publish</p>
+                    <p className="text-gray-600">To Storyblok CMS</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">Live Instantly</p>
+                    <p className="text-gray-600">Visible in blog</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </motion.div>
 
         {/* Rate Limit Status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.8 }}
+          transition={{ delay: 0.2, duration: 0.8 }}
           className="mb-8"
         >
           <div className={`p-4 rounded-lg border ${
@@ -171,7 +218,7 @@ export default function Admin() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
           className="bg-white rounded-xl shadow-lg border border-gray-100 p-8"
         >
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -250,7 +297,7 @@ export default function Admin() {
               <p className="text-sm text-blue-800 font-medium mb-2">Generation in progress...</p>
               <div className="space-y-1 text-xs text-blue-600">
                 <p>• Creating engaging content with Mistral LLM</p>
-                <p>• Generating beautiful images with Imagen4 AI</p>
+                <p>• Generating atmospheric images with Imagen4 AI</p>
                 <p>• Publishing directly to Storyblok</p>
                 <p>• Optimizing for SEO and readability</p>
               </div>

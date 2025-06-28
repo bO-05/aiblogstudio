@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Eye, Edit3, Upload, RefreshCw, Trash2 } from 'lucide-react';
+import { Calendar, Eye, Edit3, Upload, RefreshCw, Trash2, CheckCircle } from 'lucide-react';
 import { BlogPost } from '../types';
 import { format } from 'date-fns';
 
@@ -13,17 +13,20 @@ interface BlogPostCardProps {
 }
 
 export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, onDelete }: BlogPostCardProps) {
-  const statusColors = {
-    draft: 'bg-gray-100 text-gray-700',
-    generated: 'bg-blue-100 text-blue-700',
-    published: 'bg-green-100 text-green-700'
+  const statusConfig = {
+    generated: {
+      color: 'bg-blue-100 text-blue-700',
+      label: 'Local Draft',
+      description: 'Ready to publish'
+    },
+    published: {
+      color: 'bg-green-100 text-green-700',
+      label: 'Published Live',
+      description: 'Visible in blog'
+    }
   };
 
-  const statusLabels = {
-    draft: 'Draft',
-    generated: 'Generated',
-    published: 'Published'
-  };
+  const config = statusConfig[post.status as keyof typeof statusConfig] || statusConfig.generated;
 
   return (
     <motion.div
@@ -48,9 +51,10 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
         
         {/* Status Badge */}
         <div className="absolute top-3 right-3">
-          <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusColors[post.status]}`}>
-            {statusLabels[post.status]}
-          </span>
+          <div className={`px-2 py-1 text-xs font-medium rounded-full ${config.color} flex items-center space-x-1`}>
+            {post.status === 'published' && <CheckCircle className="h-3 w-3" />}
+            <span>{config.label}</span>
+          </div>
         </div>
       </div>
 
@@ -70,9 +74,14 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
           {post.title}
         </h3>
         
-        <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+        <p className="text-sm text-gray-600 mb-3 line-clamp-3">
           {post.excerpt}
         </p>
+
+        {/* Status Description */}
+        <div className="mb-4">
+          <p className="text-xs text-gray-500 italic">{config.description}</p>
+        </div>
 
         <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
           <span className="capitalize">{post.tone} tone</span>
@@ -95,14 +104,14 @@ export default function BlogPostCard({ post, onEdit, onPublish, onRegenerate, on
               className="flex-1 flex items-center justify-center space-x-1 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg transition-colors text-sm font-medium"
             >
               <Upload className="h-4 w-4" />
-              <span>Publish</span>
+              <span>Publish Live</span>
             </button>
           )}
           
           <button
             onClick={() => onRegenerate(post)}
             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Regenerate"
+            title="Regenerate Content"
           >
             <RefreshCw className="h-4 w-4" />
           </button>
