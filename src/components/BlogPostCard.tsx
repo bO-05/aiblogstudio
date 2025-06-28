@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Eye, Edit3, Upload, RefreshCw, Trash2, CheckCircle, Volume2, VolumeX } from 'lucide-react';
+import { Calendar, Eye, Edit3, Upload, RefreshCw, Trash2, CheckCircle, Volume2, VolumeX, Play } from 'lucide-react';
 import { BlogPost } from '../types';
 import { format } from 'date-fns';
 
@@ -46,6 +46,13 @@ export default function BlogPostCard({
   const audioStatus = post.audioStatus || 'none';
   const AudioIcon = audioStatusConfig[audioStatus].icon;
 
+  const handlePlayAudio = () => {
+    if (post.audioUrl) {
+      const audio = new Audio(post.audioUrl);
+      audio.play().catch(console.error);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -81,6 +88,19 @@ export default function BlogPostCard({
             <AudioIcon className="h-3 w-3" />
           </div>
         </div>
+
+        {/* Play Audio Button */}
+        {post.audioUrl && audioStatus === 'ready' && (
+          <div className="absolute bottom-3 right-3">
+            <button
+              onClick={handlePlayAudio}
+              className="p-2 bg-white/90 backdrop-blur-sm rounded-full text-purple-600 hover:bg-white hover:text-purple-700 transition-colors"
+              title="Play audio"
+            >
+              <Play className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -139,7 +159,7 @@ export default function BlogPostCard({
           )}
           
           {/* Audio Generation Button */}
-          {onGenerateAudio && post.status === 'published' && (
+          {onGenerateAudio && (
             <button
               onClick={() => onGenerateAudio(post)}
               disabled={post.audioStatus === 'generating'}

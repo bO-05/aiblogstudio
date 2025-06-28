@@ -83,7 +83,7 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-6 border border-purple-100 ${className}`}
+      className={`bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100 p-6 ${className}`}
     >
       <audio ref={audioRef} src={audioUrl} preload="metadata" />
       

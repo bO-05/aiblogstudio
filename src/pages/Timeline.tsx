@@ -6,6 +6,7 @@ import { BlogPost } from '../types';
 import { storage } from '../utils/storage';
 import { storyblokService } from '../services/storyblokService';
 import { aiService } from '../services/aiService';
+import { elevenLabsService } from '../services/elevenLabsService';
 import BlogPostCard from '../components/BlogPostCard';
 import EditPostModal from '../components/EditPostModal';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -93,32 +94,52 @@ export default function Timeline() {
       // Prepare text content for TTS
       const textContent = `${post.title}. ${post.excerpt}. ${post.content}`;
       
-      // Call the Netlify function
-      const response = await fetch('/.netlify/functions/text-to-speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: textContent
-        })
-      });
+      // Try client-side generation first (for development)
+      let audioUrl: string;
+      
+      try {
+        console.log('🎵 Attempting client-side audio generation...');
+        audioUrl = await elevenLabsService.generateAudio(textContent);
+        console.log('✅ Client-side audio generation successful');
+      } catch (clientError) {
+        console.log('⚠️ Client-side generation failed, trying Netlify function...');
+        
+        // Fallback to Netlify function (for production)
+        const response = await fetch('/.netlify/functions/text-to-speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            text: textContent
+          })
+        });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Response error:', errorText);
-        throw new Error(`Failed to generate audio: ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`Netlify function failed: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        // Convert base64 to blob URL
+        const audioBlob = new Blob([
+          new Uint8Array(atob(result.audio).split('').map(c => c.charCodeAt(0)))
+        ], { type: 'audio/mpeg' });
+        
+        audioUrl = URL.createObjectURL(audioBlob);
+        console.log('✅ Netlify function audio generation successful');
       }
 
-      const result = await response.json();
-      console.log('Audio generation result:', result);
-
-      // For now, just mark as ready since we're not integrating with Storyblok in this fix
-      const finalPost = { ...post, audioStatus: 'ready' as const };
+      // Update post with audio URL
+      const finalPost = { 
+        ...post, 
+        audioStatus: 'ready' as const,
+        audioUrl: audioUrl
+      };
       storage.updatePost(post.id, finalPost);
       setPosts(prev => prev.map(p => p.id === post.id ? finalPost : p));
       
-      toast.success('Audio generated successfully!');
+      toast.success('Audio generated successfully! You can now listen to your post.');
     } catch (error) {
       console.error('Audio generation error:', error);
       
@@ -127,7 +148,7 @@ export default function Timeline() {
       storage.updatePost(post.id, errorPost);
       setPosts(prev => prev.map(p => p.id === post.id ? errorPost : p));
       
-      toast.error('Failed to generate audio. Please try again.');
+      toast.error('Failed to generate audio. Please check your ElevenLabs API key and try again.');
     }
   };
 
@@ -249,9 +270,9 @@ export default function Timeline() {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-sm text-yellow-800">
-                  <strong>Development Note:</strong> To test audio generation locally, run <code className="bg-yellow-100 px-1 rounded">netlify dev</code> instead of <code className="bg-yellow-100 px-1 rounded">npm run dev</code> to enable Netlify functions.
+              <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <strong>✅ ElevenLabs Integration Active:</strong> Audio generation works in both development and production environments. Click the audio button on any post to generate speech!
                 </p>
               </div>
             </div>
