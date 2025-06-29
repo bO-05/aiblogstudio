@@ -13,7 +13,7 @@ A comprehensive AI-powered blog generation and management system with multimedia
 ### Content Management
 - **Timeline Management**: Track and manage all your generated content with audio status
 - **Live Audio Playback**: Audio player component for blog posts with download functionality
-- **Rate Limiting**: Protect API usage with intelligent rate limiting
+- **Rate Limiting**: Protect API usage with rate limiting
 - **Real-time Publishing**: Automatic deployment triggers via Storyblok webhooks
 
 ### User Experience
@@ -39,7 +39,7 @@ A comprehensive AI-powered blog generation and management system with multimedia
 
 1. **Clone and Install**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/bO-05/aiblogstudio.git
    cd ai-blog-studio
    npm install
    ```
@@ -82,8 +82,8 @@ A comprehensive AI-powered blog generation and management system with multimedia
    - `title` (Text)
    - `content` (Rich Text)
    - `excerpt` (Text)
-   - `image` (Asset)
-   - `audio` (Asset) - **New field for audio support**
+   - `image` (Asset) - allow external URL
+   - `audio` (Asset) 
    - `theme` (Text)
    - `tone` (Text)
 3. Get your Preview Token and Management Token
