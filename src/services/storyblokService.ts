@@ -1,6 +1,13 @@
 import StoryblokClient from 'storyblok-js-client';
 import { BlogPost, StoryblokStory } from '../types';
 
+// Utility to obfuscate sensitive tokens in logs
+const obfuscateToken = (token: string | undefined): string => {
+  if (!token) return 'undefined';
+  if (token.length <= 8) return '***';
+  return `${token.substring(0, 4)}...${token.substring(token.length - 4)}`;
+};
+
 const storyblok = new StoryblokClient({
   accessToken: import.meta.env.VITE_STORYBLOK_TOKEN,
 });
@@ -13,10 +20,11 @@ const storyblokManagement = new StoryblokClient({
 export const storyblokService = {
   async getStories(): Promise<StoryblokStory[]> {
     try {
-      // Debug environment variables
+      // Debug environment variables with obfuscated tokens
       const token = import.meta.env.VITE_STORYBLOK_TOKEN;
       console.log('🔍 Fetching stories from Storyblok...');
       console.log('- Token exists:', !!token);
+      console.log('- Token value:', obfuscateToken(token));
       console.log('- Space ID:', import.meta.env.VITE_STORYBLOK_SPACE_ID);
       
       if (!token) {
@@ -60,7 +68,7 @@ export const storyblokService = {
               length: audioUrl.length,
               isDataUrl: audioUrl.startsWith('data:audio/'),
               isHttpUrl: audioUrl.startsWith('http'),
-              preview: audioUrl.substring(0, 100) + '...'
+              preview: audioUrl.substring(0, 50) + '...'
             });
           } else if (typeof story.content.audio === 'object' && story.content.audio?.filename) {
             audioUrl = story.content.audio.filename;
@@ -114,6 +122,8 @@ export const storyblokService = {
       
       console.log('📝 Publishing post to Storyblok:');
       console.log('- Post title:', post.title);
+      console.log('- Management token:', obfuscateToken(managementToken));
+      console.log('- Space ID:', spaceId);
       console.log('- Post has audio:', !!post.audioUrl);
       console.log('- Audio URL type:', typeof post.audioUrl);
       console.log('- Audio URL length:', post.audioUrl?.length || 0);
@@ -169,7 +179,7 @@ export const storyblokService = {
         console.log('🎵 Adding audio to content:', {
           length: post.audioUrl.length,
           isDataUrl: post.audioUrl.startsWith('data:audio/'),
-          preview: post.audioUrl.substring(0, 100) + '...'
+          preview: post.audioUrl.substring(0, 50) + '...'
         });
       }
       

@@ -4,9 +4,19 @@ import { GenerationRequest } from '../types';
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
 const FAL_API_URL = 'https://fal.run/fal-ai/imagen4/preview/fast';
 
+// Utility to obfuscate sensitive tokens in logs
+const obfuscateToken = (token: string | undefined): string => {
+  if (!token) return 'undefined';
+  if (token.length <= 8) return '***';
+  return `${token.substring(0, 4)}...${token.substring(token.length - 4)}`;
+};
+
 export const aiService = {
   async generateContent(request: GenerationRequest): Promise<{ title: string; content: string; excerpt: string }> {
     try {
+      const mistralApiKey = import.meta.env.VITE_MISTRAL_API_KEY;
+      console.log('🤖 Using Mistral API key:', obfuscateToken(mistralApiKey));
+
       const wordCounts = {
         short: '300-500',
         medium: '800-1200',
@@ -52,14 +62,14 @@ Do not include any other text, explanations, or formatting outside of this JSON 
         },
         {
           headers: {
-            'Authorization': `Bearer ${import.meta.env.VITE_MISTRAL_API_KEY}`,
+            'Authorization': `Bearer ${mistralApiKey}`,
             'Content-Type': 'application/json',
           },
         }
       );
 
       const content = response.data.choices[0].message.content.trim();
-      console.log('Raw AI response:', content);
+      console.log('Raw AI response received (length):', content.length);
       
       try {
         // Clean the response - remove any markdown code blocks or extra formatting
@@ -78,7 +88,7 @@ Do not include any other text, explanations, or formatting outside of this JSON 
           cleanContent = jsonMatch[0];
         }
         
-        console.log('Cleaned content for parsing:', cleanContent);
+        console.log('Cleaned content for parsing (length):', cleanContent.length);
         
         const parsed = JSON.parse(cleanContent);
         
@@ -139,12 +149,14 @@ Do not include any other text, explanations, or formatting outside of this JSON 
 
   async generateImage(theme: string): Promise<string> {
     try {
+      const falApiKey = import.meta.env.VITE_FAL_API_KEY;
       console.log('🎨 Generating image with Imagen4 for theme:', theme);
+      console.log('🔑 Using FAL API key:', obfuscateToken(falApiKey));
       
       // Create an atmospheric, narrative-style prompt based on the blog theme
       const atmosphericPrompt = this.createAtmosphericPrompt(theme);
       
-      console.log('🖼️ Generated atmospheric prompt:', atmosphericPrompt);
+      console.log('🖼️ Generated atmospheric prompt (length):', atmosphericPrompt.length);
 
       const response = await axios.post(
         FAL_API_URL,
@@ -155,14 +167,14 @@ Do not include any other text, explanations, or formatting outside of this JSON 
         },
         {
           headers: {
-            'Authorization': `Key ${import.meta.env.VITE_FAL_API_KEY}`,
+            'Authorization': `Key ${falApiKey}`,
             'Content-Type': 'application/json',
           },
         }
       );
 
       const imageUrl = response.data.images[0].url;
-      console.log('✅ Imagen4 generated image URL:', imageUrl);
+      console.log('✅ Imagen4 generated image URL received');
       
       return imageUrl;
     } catch (error) {

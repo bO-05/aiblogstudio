@@ -2,6 +2,13 @@ import axios from 'axios';
 
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 
+// Utility to obfuscate sensitive tokens in logs
+const obfuscateToken = (token: string | undefined): string => {
+  if (!token) return 'undefined';
+  if (token.length <= 8) return '***';
+  return `${token.substring(0, 4)}...${token.substring(token.length - 4)}`;
+};
+
 export const elevenLabsService = {
   async generateAudio(text: string): Promise<string> {
     try {
@@ -64,6 +71,8 @@ export const elevenLabsService = {
       if (!apiKey) {
         throw new Error('ElevenLabs API key not found');
       }
+
+      console.log('🔑 Using ElevenLabs API key:', obfuscateToken(apiKey));
 
       // Use Rachel voice ID
       const voiceId = '21m00Tcm4TlvDq8ikWAM';

@@ -2,6 +2,13 @@
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 const VOICE_ID = '21m00Tcm4TlvDq8ikWAM'; // Rachel voice UUID
 
+// Utility to obfuscate sensitive tokens in logs
+const obfuscateToken = (token) => {
+  if (!token) return 'undefined';
+  if (token.length <= 8) return '***';
+  return `${token.substring(0, 4)}...${token.substring(token.length - 4)}`;
+};
+
 const prepareTextForTTS = (content) => {
   // Remove markdown formatting
   let cleanText = content
@@ -30,6 +37,8 @@ const generateAudioFromText = async (text) => {
     if (!apiKey) {
       throw new Error('ElevenLabs API key not found');
     }
+
+    console.log('🔑 Using ElevenLabs API key:', obfuscateToken(apiKey));
 
     const cleanText = prepareTextForTTS(text);
     console.log('📝 Text prepared for TTS, length:', cleanText.length);
