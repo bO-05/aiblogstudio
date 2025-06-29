@@ -2,7 +2,7 @@
 
 A comprehensive AI-powered blog generation and management system with multimedia capabilities. Generate engaging blog posts with Mistral LLM, stunning images with Imagen4 AI, natural speech audio with ElevenLabs, and publish directly to Storyblok CMS.
 
-## 🚀 Features
+## Features
 
 ### Core AI Capabilities
 - **AI Content Generation**: Create compelling blog posts using Mistral LLM with customizable tone and length
@@ -17,12 +17,12 @@ A comprehensive AI-powered blog generation and management system with multimedia
 - **Real-time Publishing**: Automatic deployment triggers via Storyblok webhooks
 
 ### User Experience
-- **Responsive Design**: Beautiful, modern interface that works on all devices
+- **Responsive Design**: Modern interface that works on all devices
 - **Authentication**: Secure admin access with session management
 - **Multi-modal Content**: Support for text, images, and audio in a single workflow
 - **Content Warnings**: Built-in AI hallucination warnings for responsible content consumption
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS + Framer Motion animations
@@ -35,12 +35,12 @@ A comprehensive AI-powered blog generation and management system with multimedia
 - **Authentication**: Custom session-based auth
 - **Deployment**: Netlify (with serverless functions)
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Clone and Install**
    ```bash
    git clone https://github.com/bO-05/aiblogstudio.git
-   cd ai-blog-studio
+   cd aiblogstudio
    npm install
    ```
 
@@ -74,7 +74,7 @@ A comprehensive AI-powered blog generation and management system with multimedia
    npm run dev
    ```
 
-## 📋 Setup Requirements
+## Setup Requirements
 
 ### Storyblok Setup
 1. Create a Storyblok account and space
@@ -83,7 +83,7 @@ A comprehensive AI-powered blog generation and management system with multimedia
    - `content` (Rich Text)
    - `excerpt` (Text)
    - `image` (Asset) - allow external URL
-   - `audio` (Asset) 
+   - `audio` (Asset)
    - `theme` (Text)
    - `tone` (Text)
 3. Get your Preview Token and Management Token
@@ -99,7 +99,7 @@ A comprehensive AI-powered blog generation and management system with multimedia
 2. Add all environment variables to Netlify
 3. The `netlify/functions/text-to-speech.js` function will handle audio generation in production
 
-## 🎯 Usage
+## Usage
 
 ### Content Creation Workflow
 1. **Access Admin Panel**: Visit `/login` and enter your admin password
@@ -115,7 +115,7 @@ A comprehensive AI-powered blog generation and management system with multimedia
 - **Retroactive Audio**: Add audio to previously published posts
 - **Download Support**: Users can download audio files for offline listening
 
-## 🔄 Deployment
+## Deployment
 
 ### Netlify Deployment
 1. **Build for Production**
@@ -150,7 +150,7 @@ STORYBLOK_MANAGEMENT_TOKEN=your_management_token
 PRODUCTION_DOMAIN=https://your-domain.netlify.app
 ```
 
-## 🎨 Design Philosophy
+## Design Philosophy
 
 - **Modern Aesthetics**: Clean, professional design with subtle animations
 - **Accessibility First**: Audio support and proper contrast ratios
@@ -158,7 +158,7 @@ PRODUCTION_DOMAIN=https://your-domain.netlify.app
 - **Performance**: Optimized for speed and responsiveness
 - **Responsible AI**: Clear warnings about AI-generated content limitations
 
-## 🔧 Architecture
+## Architecture
 
 ```
 src/
@@ -180,7 +180,64 @@ netlify/
     └── text-to-speech.js # Serverless audio generation
 ```
 
-## 🚀 Future Enhancements
+## Project Structure
+
+```
+├── .env.example
+├── .gitignore
+├── README.md
+├── eslint.config.js
+├── index.html
+├── netlify.toml
+├── netlify/
+│   └── functions/
+│       └── text-to-speech.js
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── public/
+│   └── _redirects
+├── src/
+│   ├── App.tsx
+│   ├── components/
+│   │   ├── AudioPlayer.tsx
+│   │   ├── BlogLayout.tsx
+│   │   ├── BlogPostCard.tsx
+│   │   ├── EditPostModal.tsx
+│   │   ├── Layout.tsx
+│   │   ├── LoadingSpinner.tsx
+│   │   ├── Navbar.tsx
+│   │   ├── ProtectedRoute.tsx
+│   │   ├── RichTextRenderer.tsx
+│   │   └── SuccessModal.tsx
+│   ├── index.css
+│   ├── main.tsx
+│   ├── pages/
+│   │   ├── Admin.tsx
+│   │   ├── Blog.tsx
+│   │   ├── BlogPost.tsx
+│   │   ├── Home.tsx
+│   │   ├── Login.tsx
+│   └── Timeline.tsx
+│   ├── services/
+│   │   ├── aiService.ts
+│   │   ├── debug.ts
+│   │   ├── elevenLabsService.ts
+│   │   └── storyblokService.ts
+│   ├── types/
+│   │   └── index.ts
+│   ├── utils/
+│   │   ├── rateLimiter.ts
+│   │   └── storage.ts
+│   └── vite-env.d.ts
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
+```
+
+## Future Enhancements
 
 - Multi-user support with role-based access
 - Advanced analytics and engagement metrics
@@ -191,7 +248,7 @@ netlify/
 - Podcast generation from blog content
 - Multi-language support with voice cloning
 
-## ⚠️ Important Notes
+## Important Notes
 
 ### AI Content Disclaimer
 This application generates content using AI models. Users should be aware that:
@@ -206,7 +263,7 @@ This application generates content using AI models. Users should be aware that:
 - Production uses Netlify serverless functions for audio generation
 - Audio can be added to existing published posts retroactively
 
-## 🏆 Highlights
+## Highlights
 
 This project showcases:
 - **Complete AI Integration**: Text, image, and audio generation in one workflow
@@ -216,7 +273,7 @@ This project showcases:
 - **Accessibility Focus**: Audio support for inclusive content consumption
 - **Responsible AI**: Proper warnings and disclaimers for AI-generated content
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -224,12 +281,12 @@ This project showcases:
 4. Add tests if applicable
 5. Submit a pull request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
-Built with ❤️ by [async-dime](https://dev.to/async_dime) 2025
+Built with ❤️ by [bO-05](https://github.com/bO-05) 2025
 
 **Experience the future of multimedia content creation with AI-powered blogging!**
