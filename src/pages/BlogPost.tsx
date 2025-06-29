@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 import { storyblokService } from '../services/storyblokService';
+import { elevenLabsService } from '../services/elevenLabsService';
+import { storage } from '../utils/storage';
 import { StoryblokStory } from '../types';
 import BlogLayout from '../components/BlogLayout';
 import RichTextRenderer from '../components/RichTextRenderer';
 import AudioPlayer from '../components/AudioPlayer';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { toast } from 'sonner';
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<StoryblokStory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [generatingAudio, setGeneratingAudio] = useState(false);
+  const isAdmin = storage.isAuthenticated();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -80,6 +86,53 @@ export default function BlogPost() {
     fetchPost();
   }, [slug]);
 
+  const handleGenerateAudio = async () => {
+    if (!post || !post.id) return;
+
+    setGeneratingAudio(true);
+    toast.info('Generating audio... This may take a few minutes.');
+
+    try {
+      // Prepare text content for TTS
+      const textContent = `${post.content.title}. ${post.content.excerpt}. ${post.content.content}`;
+      
+      console.log('🎵 Generating audio for published post:', post.content.title);
+      
+      // Generate audio using ElevenLabs
+      const audioDataUrl = await elevenLabsService.generateAudio(textContent);
+      
+      console.log('✅ Audio generated successfully for blog post:', {
+        isDataUrl: audioDataUrl.startsWith('data:audio/'),
+        length: audioDataUrl.length
+      });
+
+      // Update the post in Storyblok with the new audio
+      const success = await storyblokService.addAudioToExistingPost(post.id.toString(), audioDataUrl);
+      
+      if (success) {
+        // Update local state to show the audio player
+        setPost(prevPost => ({
+          ...prevPost!,
+          content: {
+            ...prevPost!.content,
+            audio: audioDataUrl
+          }
+        }));
+        
+        console.log('✅ Audio added to published Storyblok post and updated locally');
+        toast.success('Audio generated and added to blog post successfully!');
+      } else {
+        console.warn('⚠️ Audio generated but failed to update Storyblok');
+        toast.error('Failed to add audio to blog post. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Audio generation error:', error);
+      toast.error('Failed to generate audio. Please check your ElevenLabs API key and try again.');
+    } finally {
+      setGeneratingAudio(false);
+    }
+  };
+
   if (loading) {
     return (
       <BlogLayout showBackButton>
@@ -100,11 +153,16 @@ export default function BlogPost() {
     post.content.audio.startsWith('http')
   );
 
+  // Check if admin can generate audio (admin + no audio)
+  const canGenerateAudio = isAdmin && !hasValidAudio;
+
   console.log('🎵 BlogPost - Audio validation:', {
     hasAudio: !!post.content.audio,
     audioUrl: post.content.audio,
     hasValidAudio,
-    audioLength: post.content.audio?.length || 0
+    audioLength: post.content.audio?.length || 0,
+    isAdmin,
+    canGenerateAudio
   });
 
   return (
@@ -117,6 +175,48 @@ export default function BlogPost() {
       tone={post.content.tone}
       showBackButton
     >
+      {/* Admin Audio Generation Button - Only show if admin and no audio */}
+      {canGenerateAudio && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8"
+        >
+          <div className="bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-200 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="bg-orange-100 rounded-full p-2">
+                  <VolumeX className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">No Audio Available</h3>
+                  <p className="text-gray-600 text-sm">This post was created before the audio feature. Generate audio now!</p>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleGenerateAudio}
+                disabled={generatingAudio}
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-purple-600 text-white font-semibold rounded-lg hover:from-orange-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+              >
+                {generatingAudio ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="h-4 w-4" />
+                    <span>Generate Audio</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Audio Player - Show if valid audio is available */}
       {hasValidAudio && (
         <motion.div
@@ -181,6 +281,29 @@ export default function BlogPost() {
           </div>
         </div>
       </motion.div>
+
+      {/* Loading Overlay for Audio Generation */}
+      {generatingAudio && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <LoadingSpinner size="lg" />
+              <h3 className="text-lg font-semibold text-gray-900 mt-4 mb-2">
+                Generating Audio
+              </h3>
+              <p className="text-gray-600 text-sm mb-4">
+                Creating natural-sounding speech with ElevenLabs...
+              </p>
+              <div className="space-y-1 text-xs text-gray-500">
+                <p>• Processing blog content for text-to-speech</p>
+                <p>• Generating high-quality audio with Rachel voice</p>
+                <p>• Adding audio to published blog post</p>
+                <p>• This may take 1-2 minutes</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </BlogLayout>
   );
 }
