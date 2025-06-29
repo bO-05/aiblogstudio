@@ -17,24 +17,42 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
   const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  // Validate audio URL
+  const isValidAudioUrl = audioUrl && (
+    audioUrl.startsWith('data:audio/') || 
+    audioUrl.startsWith('http') || 
+    audioUrl.startsWith('https')
+  );
+
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !isValidAudioUrl) {
+      setIsLoading(false);
+      if (!isValidAudioUrl) {
+        setError('Invalid audio URL format');
+      }
+      return;
+    }
 
     const updateTime = () => setCurrentTime(audio.currentTime);
     const updateDuration = () => {
       setDuration(audio.duration);
       setIsLoading(false);
+      setError(null);
     };
     const handleEnded = () => setIsPlaying(false);
     const handleError = (e: Event) => {
       console.error('Audio playback error:', e);
-      setError('Unable to load audio file');
+      setError('Unable to load or play audio file');
       setIsLoading(false);
     };
     const handleCanPlay = () => {
       setError(null);
       setIsLoading(false);
+    };
+    const handleLoadStart = () => {
+      setIsLoading(true);
+      setError(null);
     };
 
     audio.addEventListener('timeupdate', updateTime);
@@ -42,6 +60,11 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('error', handleError);
     audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('loadstart', handleLoadStart);
+
+    // Set the audio source
+    audio.src = audioUrl;
+    audio.load();
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
@@ -49,30 +72,26 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('error', handleError);
       audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('loadstart', handleLoadStart);
     };
-  }, [audioUrl]);
-
-  // Check if the audio URL is valid
-  const isValidAudioUrl = audioUrl && (
-    audioUrl.startsWith('data:audio/') || 
-    audioUrl.startsWith('http') || 
-    audioUrl.startsWith('https')
-  );
+  }, [audioUrl, isValidAudioUrl]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
-    if (!audio || error) return;
+    if (!audio || error || !isValidAudioUrl) return;
 
     try {
       if (isPlaying) {
         audio.pause();
+        setIsPlaying(false);
       } else {
         await audio.play();
+        setIsPlaying(true);
       }
-      setIsPlaying(!isPlaying);
     } catch (playError) {
       console.error('Error playing audio:', playError);
       setError('Failed to play audio');
+      setIsPlaying(false);
     }
   };
 
@@ -114,7 +133,7 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
 
   // Don't render if audio URL is invalid
   if (!isValidAudioUrl) {
-    console.warn('Invalid audio URL provided to AudioPlayer:', audioUrl);
+    console.warn('AudioPlayer: Invalid audio URL provided:', audioUrl);
     return null;
   }
 
@@ -132,7 +151,7 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
             <h3 className="text-red-800 font-semibold">Audio Unavailable</h3>
             <p className="text-red-700 text-sm mt-1">{error}</p>
             <p className="text-red-600 text-xs mt-2">
-              The audio file may have been generated in a previous session and is no longer accessible.
+              The audio file may be corrupted or the URL is no longer accessible.
             </p>
           </div>
         </div>
@@ -146,7 +165,7 @@ export default function AudioPlayer({ audioUrl, title, className = '' }: AudioPl
       animate={{ opacity: 1, y: 0 }}
       className={`bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border border-purple-100 p-6 ${className}`}
     >
-      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      <audio ref={audioRef} preload="metadata" />
       
       <div className="flex items-center space-x-4">
         {/* Play/Pause Button */}

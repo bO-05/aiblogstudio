@@ -42,7 +42,12 @@ export default function BlogPost() {
               hasImage: !!story.content?.image,
               hasAudio: !!story.content?.audio,
               imageUrl: story.content?.image,
-              audioUrl: story.content?.audio
+              audioUrl: story.content?.audio,
+              audioUrlType: typeof story.content?.audio,
+              audioUrlValid: story.content?.audio && (
+                story.content.audio.startsWith('data:audio/') || 
+                story.content.audio.startsWith('http')
+              )
             });
           }
           
@@ -50,12 +55,14 @@ export default function BlogPost() {
         });
         
         if (foundPost) {
-          console.log('📖 BlogPost - Setting post data:', {
+          console.log('📖 BlogPost - Setting post data with audio details:', {
             title: foundPost.content?.title,
             hasImage: !!foundPost.content?.image,
             hasAudio: !!foundPost.content?.audio,
             imageUrl: foundPost.content?.image,
-            audioUrl: foundPost.content?.audio
+            audioUrl: foundPost.content?.audio,
+            audioUrlLength: foundPost.content?.audio?.length || 0,
+            audioUrlStartsWith: foundPost.content?.audio?.substring(0, 50) || 'N/A'
           });
           setPost(foundPost);
         } else {
@@ -87,6 +94,19 @@ export default function BlogPost() {
     return <Navigate to="/blog" replace />;
   }
 
+  // Check if audio is available and valid
+  const hasValidAudio = post.content.audio && (
+    post.content.audio.startsWith('data:audio/') || 
+    post.content.audio.startsWith('http')
+  );
+
+  console.log('🎵 BlogPost - Audio validation:', {
+    hasAudio: !!post.content.audio,
+    audioUrl: post.content.audio,
+    hasValidAudio,
+    audioLength: post.content.audio?.length || 0
+  });
+
   return (
     <BlogLayout
       title={post.content.title}
@@ -97,8 +117,8 @@ export default function BlogPost() {
       tone={post.content.tone}
       showBackButton
     >
-      {/* Audio Player - Show if audio is available */}
-      {post.content.audio && (
+      {/* Audio Player - Show if valid audio is available */}
+      {hasValidAudio && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -106,7 +126,7 @@ export default function BlogPost() {
           className="mb-8"
         >
           <AudioPlayer 
-            audioUrl={post.content.audio} 
+            audioUrl={post.content.audio!} 
             title={post.content.title || 'Blog Post Audio'}
           />
         </motion.div>
@@ -115,7 +135,7 @@ export default function BlogPost() {
       <motion.article
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: post.content.audio ? 0.2 : 0 }}
+        transition={{ duration: 0.8, delay: hasValidAudio ? 0.2 : 0 }}
         className="max-w-none"
       >
         {post.content.content && (
@@ -138,7 +158,7 @@ export default function BlogPost() {
             Enjoyed this AI-generated content?
           </h3>
           <p className="text-gray-600 mb-4">
-            This post was created using advanced AI technology including {post.content.audio ? 'text-to-speech audio, ' : ''}content generation with Mistral LLM, image creation with Imagen4 AI, and published through Storyblok CMS.
+            This post was created using advanced AI technology including {hasValidAudio ? 'text-to-speech audio, ' : ''}content generation with Mistral LLM, image creation with Imagen4 AI, and published through Storyblok CMS.
           </p>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <p className="text-sm text-yellow-800">

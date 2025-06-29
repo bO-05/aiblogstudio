@@ -96,16 +96,19 @@ export default function Timeline() {
       
       console.log('🎵 Generating audio for post:', post.title);
       
-      // Generate audio using ElevenLabs (now returns base64 data URL)
+      // Generate audio - this will return a data URL
       const audioDataUrl = await elevenLabsService.generateAudio(textContent);
       
-      console.log('✅ Audio generated successfully as data URL');
+      console.log('✅ Audio generated successfully:', {
+        isDataUrl: audioDataUrl.startsWith('data:audio/'),
+        length: audioDataUrl.length
+      });
 
       // Update post with audio data URL
       const finalPost = { 
         ...post, 
         audioStatus: 'ready' as const,
-        audioUrl: audioDataUrl // This is now a data:audio/mpeg;base64,... URL
+        audioUrl: audioDataUrl
       };
       storage.updatePost(post.id, finalPost);
       setPosts(prev => prev.map(p => p.id === post.id ? finalPost : p));
@@ -261,7 +264,7 @@ export default function Timeline() {
               </div>
               <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                 <p className="text-sm text-green-800">
-                  <strong>✅ Audio Storage Fixed:</strong> Audio is now stored as persistent data URLs that work across sessions. Generated audio will be available on live blog posts!
+                  <strong>✅ Audio System Fixed:</strong> Audio is now stored as persistent data URLs that work across all sessions and environments. Generated audio will be available on live blog posts in both development and production!
                 </p>
               </div>
             </div>
